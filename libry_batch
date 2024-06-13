@@ -1,0 +1,37 @@
+#!/bin/bash
+#SBATCH --job-name=run_Ntest_t06_PALEO         # Specify job name
+#SBATCH --partition=std              # Specify partition name (compute/compute2)
+#SBATCH --nodes=16                   # Specify number of nodes
+#SBATCH --ntasks-per-node=16        # Specify number of tasks per node (max. 24/36)
+#SBATCH --mail-type=FAIL                # Notify user by email in case of job failure
+#SBATCH --mail-user=philipp.porada@uni-hamburg.de	# email address
+#SBATCH --export=NONE					# ?
+#SBATCH --output=job_Ntest_t06_PALEO.o%j       # File name for standard output
+#SBATCH --error=job_Ntest_t06_PALEO.e%j        # File name for standard error output
+
+source /sw/batch/init.sh
+
+# Environment settings
+
+module switch env env/2015Q2-intel16-impi
+
+export I_MPI_PMI_LIBRARY=/usr/lib64/libpmi.so
+
+# launch program
+
+mpirun ./libry_Ntest06_paleo.x
+
+echo "waiting for restart setup - start year was:" 1
+
+while [ ! -e libry_restart0 ]
+do
+  sleep 0.1
+done
+
+echo "restart setup found"
+
+if [ ! -e libry_restartX ]
+then
+  bash /work/bay2464/simulations/Ntest_t06_PALEO/run_libry.sh
+fi
+
